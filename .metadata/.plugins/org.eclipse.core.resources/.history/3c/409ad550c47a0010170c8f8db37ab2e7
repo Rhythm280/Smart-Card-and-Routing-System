@@ -1,0 +1,33 @@
+package com.smartBusSystem.ui;
+
+import java.awt.*;
+import java.awt.event.*;
+import java.util.List;
+
+import com.smartBusSystem.dao.*;
+
+public class TripHistoryFrame extends Frame {
+    private final int passengerId;
+    private final TripDAO tripDAO = new TripDAO();
+    private final List list = new List(18, false);
+
+    public TripHistoryFrame(int passengerId) {
+        this.passengerId = passengerId;
+        setTitle("My Trip History");
+        setSize(700, 420);
+        setLayout(new BorderLayout(6,6));
+        add(new Label("Most recent first:"), BorderLayout.NORTH);
+        add(list, BorderLayout.CENTER);
+
+        reload();
+
+        addWindowListener(new WindowAdapter(){ public void windowClosing(WindowEvent e){ dispose(); } });
+    }
+
+    private void reload() {
+        list.removeAll();
+        java.util.List<String> lines = tripDAO.listPrettyByPassenger(passengerId);
+        for (String s : lines) list.add(s);
+        if (lines.isEmpty()) list.add("No trips yet.");
+    }
+}

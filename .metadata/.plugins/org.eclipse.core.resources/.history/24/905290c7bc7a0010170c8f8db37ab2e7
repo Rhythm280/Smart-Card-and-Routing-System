@@ -1,0 +1,53 @@
+ package com.smartBusSystem.service;
+
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.PriorityQueue;
+
+/** Basic Dijkstra returning distances and previous map. */
+ public class Dijkstra {
+     public static class Result {
+         public final Map<Integer, Double> dist;
+         public final Map<Integer, Integer> prev;
+         Result(Map<Integer, Double> d, Map<Integer, Integer> p){this.dist=d; this.prev=p;}
+     }
+
+     public static Result shortestPath(Map<Integer, List<int[]>> graph, Map<String, Double> weights, int src) {
+         Map<Integer, Double> dist = new HashMap<>();
+         Map<Integer, Integer> prev = new HashMap<>();
+         // min-heap of [node, dist]
+         PriorityQueue<int[]> pq = new PriorityQueue<>(Comparator.comparingDouble(a -> dist.getOrDefault(a[0], Double.POSITIVE_INFINITY)));
+
+         for (Integer v : graph.keySet()) dist.put(v, Double.POSITIVE_INFINITY);
+         dist.put(src, 0.0);
+         pq.add(new int[]{src});
+
+         while (!pq.isEmpty()) {
+             int u = pq.poll()[0];
+             for (int[] pair : graph.getOrDefault(u, Collections.emptyList())) {
+                 int v = pair[0]; int edgeId = pair[1];
+                 double w = weights.getOrDefault("e"+edgeId, Double.POSITIVE_INFINITY);
+                 double alt = dist.get(u) + w;
+                 if (alt < dist.getOrDefault(v, Double.POSITIVE_INFINITY)) {
+                     dist.put(v, alt);
+                     prev.put(v, u);
+                     pq.add(new int[]{v});
+                 }
+             }
+         }
+         return new Result(dist, prev);
+     }
+
+     public static List<Integer> reconstructPath(Map<Integer, Integer> prev, int src, int dst) {
+         LinkedList<Integer> path = new LinkedList<>();
+         Integer cur = dst;
+         while (cur != null) {
+             path.addFirst(cur);
+             if (cur == src) break;
+             cur = prev.get(cur);
+         }
+         if (path.isEmpty() || path.getFirst() != src) return Collections.emptyList();
+         return path;
+     }
+ }

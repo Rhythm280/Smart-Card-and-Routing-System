@@ -1,0 +1,42 @@
+package com.smartBusSystem.ui;
+
+import com.smartBusSysem.dao.*;
+import com.smartBusSystem.model.*;
+
+import java.awt.*;
+import java.awt.event.*;
+import java.util.List;
+
+public class RoutesFrame extends Frame {
+    public RoutesFrame() {
+        setTitle("Available Bus Routes");
+        setSize(500, 400);
+        setLayout(new BorderLayout());
+
+        TextArea routesArea = new TextArea();
+        add(routesArea, BorderLayout.CENTER);
+
+        RouteDAO dao = new RouteDAO();
+        List<Route> routes = dao.getAllRoutes();
+
+        for (Route r : routes) {
+            routesArea.append("Route ID: " + r.getRouteId() +
+                    " | From: " + r.getSource() +
+                    " | To: " + r.getDestination() +
+                    " | Fare: " + r.getFare() + "\n");
+        }
+
+        Button closeBtn = new Button("Close");
+        add(closeBtn, BorderLayout.SOUTH);
+
+        closeBtn.addActionListener(e -> dispose());
+
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent we) {
+                dispose();
+            }
+        });
+
+        setVisible(true);
+    }
+}

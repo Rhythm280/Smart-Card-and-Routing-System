@@ -1,0 +1,79 @@
+package ui;
+
+import model.Passenger;
+import dao.PassengerDAO;
+
+import java.awt.*;
+import java.awt.event.*;
+
+public class PassengerDashboard extends Frame {
+    Passenger passenger;
+    Label balanceLabel;
+
+    public PassengerDashboard(Passenger p) {
+        this.passenger = p;
+
+        setTitle("Passenger Dashboard - " + p.getName());
+        setSize(450, 250);
+        setLayout(new GridLayout(5, 2));
+
+        add(new Label("Welcome, " + p.getName()));
+        add(new Label("Card ID: " + p.getCardId()));
+
+        balanceLabel = new Label("Balance: " + p.getBalance());
+        add(balanceLabel);
+
+        Button rechargeBtn = new Button("Recharge Wallet");
+        add(rechargeBtn);
+
+        Button bookTripBtn = new Button("Book Trip");
+        add(bookTripBtn);
+
+        Button routesBtn = new Button("View Routes");
+        add(routesBtn);
+
+        Button logoutBtn = new Button("Logout");
+        add(logoutBtn);
+
+        rechargeBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                new RechargeDialog(PassengerDashboard.this, passenger);
+            }
+        });
+
+        bookTripBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                new TripBookingDialog(PassengerDashboard.this, passenger);
+            }
+        });
+
+        routesBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                new RoutesFrame();
+            }
+        });
+
+        logoutBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+                new LoginFrame();
+            }
+        });
+
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent we) {
+                dispose();
+                System.exit(0);
+            }
+        });
+
+        setVisible(true);
+    }
+
+    public void refreshBalance() {
+        PassengerDAO dao = new PassengerDAO();
+        Passenger updated = dao.login(passenger.getCardId(), passenger.getPassword());
+        passenger.setBalance(updated.getBalance());
+        balanceLabel.setText("Balance: " + passenger.getBalance());
+    }
+}

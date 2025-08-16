@@ -1,0 +1,49 @@
+package com.smartbus.model;
+
+public class Passenger {
+	private int passengerId;
+	private String name;
+	private String cardId;
+	private String password;
+	private double balance;
+
+	public int getPassengerId() {
+		return passengerId;
+	}
+
+	public void setPassengerId(int passengerId) {
+		this.passengerId = passengerId;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getCardId() {
+		return cardId;
+	}
+
+	public void setCardId(String cardId) {
+		this.cardId = cardId;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public double getBalance() {
+		return balance;
+	}
+
+	public void setBalance(double balance) {
+		this.balance = balance;
+	}
+}

@@ -1,0 +1,108 @@
+package com.smartbus.ui;
+
+import com.smartbus.model.Passenger;
+import com.smartbus.service.RouteService;
+import com.smartbus.dao.TripDAO;
+
+import java.awt.*;
+import java.awt.event.*;
+import java.util.Map;
+
+public class PassengerDashboard extends Frame {
+	private final Passenger me;
+	private final RouteService routeService = new RouteService();
+	private final TripDAO tripDAO = new TripDAO();
+
+	private final Choice src = new Choice();
+	private final Choice dst = new Choice();
+	private final Button btnShortest = new Button("Preview: Shortest");
+	private final Button btnCheapest = new Button("Preview: Cheapest");
+	private final Button btnBookShortest = new Button("Book Shortest");
+	private final Button btnBookCheapest = new Button("Book Cheapest");
+	private final Button btnRecharge = new Button("Recharge");
+	private final Button btnHistory = new Button("Trip History");
+	private final Label lblBalance = new Label();
+	private final TextArea output = new TextArea("", 10, 60, TextArea.SCROLLBARS_VERTICAL_ONLY);
+
+	public PassengerDashboard(Passenger p) {
+		this.me = p;
+		setTitle("Passenger - " + p.getName() + " | Card: " + p.getCardId());
+		setSize(760, 520);
+		setLayout(new BorderLayout(8, 8));
+
+		Panel top = new Panel(new GridLayout(4, 4, 6, 6));
+		top.add(new Label("From:"));
+		top.add(src);
+		top.add(new Label("To:"));
+		top.add(dst);
+
+		top.add(btnShortest);
+		top.add(btnCheapest);
+		top.add(btnBookShortest);
+		top.add(btnBookCheapest);
+
+		top.add(btnRecharge);
+		top.add(btnHistory);
+		top.add(new Label("Balance:"));
+		lblBalance.setText(String.format("₹ %.2f", me.getBalance()));
+		top.add(lblBalance);
+
+		Map<Integer, String> names = routeService.stopNamesById();
+		names.values().forEach(n -> {
+			src.add(n);
+			dst.add(n);
+		});
+		if (src.getItemCount() > 0) {
+			src.select(0);
+			dst.select(Math.min(1, dst.getItemCount() - 1));
+		}
+
+		add(top, BorderLayout.NORTH);
+		add(output, BorderLayout.CENTER);
+
+		btnRecharge.addActionListener(e -> new RechargeFrame(me, lblBalance).setVisible(true));
+
+		btnShortest.addActionListener(e -> preview(true));
+		btnCheapest.addActionListener(e -> preview(false));
+
+		btnBookShortest.addActionListener(e -> book(true));
+		btnBookCheapest.addActionListener(e -> book(false));
+
+		btnHistory.addActionListener(e -> new TripHistoryFrame(me.getPassengerId()).setVisible(true));
+
+		addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				System.exit(0);
+			}
+		});
+	}
+
+	private void preview(boolean shortest) {
+		var rr = shortest ? routeService.shortestByDistance(src.getSelectedItem(), dst.getSelectedItem())
+				: routeService.cheapestByEdgeFare(src.getSelectedItem(), dst.getSelectedItem());
+
+		if (rr == null) {
+			output.setText("No route available.");
+			return;
+		}
+		String path = String.join(" → ",
+				rr.stopPath.stream().map(i -> routeService.stopNamesById().get(i)).toArray(String[]::new));
+		output.setText((shortest ? "Preview (Shortest Distance)\n" : "Preview (Cheapest Edge Fare)\n") + "Path: " + path
+				+ "\n" + String.format("Distance: %.2f km\n", rr.distanceKm)
+				+ String.format("Fare (policy): ₹ %.2f\n", rr.fare));
+	}
+
+	private void book(boolean shortest) {
+		double charged = shortest
+				? routeService.bookTripByDistance(me.getPassengerId(), src.getSelectedItem(), dst.getSelectedItem())
+				: routeService.bookTripByCheapest(me.getPassengerId(), src.getSelectedItem(), dst.getSelectedItem());
+
+		if (charged < 0) {
+			output.setText("Booking failed. Reason: Insufficient balance or route unavailable.");
+			return;
+		}
+		me.setBalance(me.getBalance() - charged);
+		lblBalance.setText(String.format("₹ %.2f", me.getBalance()));
+		output.setText(String.format("Trip booked! Charged ₹ %.2f\nNew balance: ₹ %.2f", charged, me.getBalance()));
+	}
+}

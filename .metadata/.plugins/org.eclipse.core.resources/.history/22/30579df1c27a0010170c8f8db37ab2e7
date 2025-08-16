@@ -1,0 +1,136 @@
+package com.smartBusSystem.service;
+
+import com.smartBusSysem.dao.*;
+import com.smartBusSystem.db.*;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.*;
+
+public class RouteService {
+	private final GraphService graphService = new GraphService();
+	private final FareService fareService = new FareService();
+	private final PassengerDAO passengerDAO = new PassengerDAO();
+	private final TripDAO tripDAO = new TripDAO();
+
+	public RouteService() {
+		graphService.reload();
+	}
+
+	public static class RouteResult {
+		public List<Integer> stopPath;
+		public double cost; // distance or fare sum (algo objective)
+		public double distanceKm; // computed distance along path
+		public double fare; // final fare charged by policy
+		public int srcStopId;
+		public int dstStopId;
+	}
+
+	public RouteResult shortestByDistance(String srcName, String dstName) {
+		Integer src = graphService.idOf(srcName), dst = graphService.idOf(dstName);
+		if (src == null || dst == null)
+			return null;
+		var res = Dijkstra.shortestPath(graphService.getGraph(), graphService.getDistanceWeights(), src);
+		List<Integer> path = Dijkstra.reconstructPath(res.prev, src, dst);
+		if (path.isEmpty())
+			return null;
+
+		double dist = 0.0;
+		for (int i = 0; i < path.size() - 1; i++) {
+			int u = path.get(i), v = path.get(i + 1);
+			for (int[] nb : graphService.getGraph().get(u)) {
+				if (nb[0] == v) {
+					dist += graphService.getDistanceWeights().get("e" + nb[1]);
+					break;
+				}
+			}
+		}
+		RouteResult rr = new RouteResult();
+		rr.stopPath = path;
+		rr.cost = dist;
+		rr.distanceKm = dist;
+		rr.fare = fareService.computeFare(dist);
+		rr.srcStopId = src;
+		rr.dstStopId = dst;
+		return rr;
+	}
+
+	public RouteResult cheapestByEdgeFare(String srcName, String dstName) {
+		Integer src = graphService.idOf(srcName), dst = graphService.idOf(dstName);
+		if (src == null || dst == null)
+			return null;
+		var res = Dijkstra.shortestPath(graphService.getGraph(), graphService.getFareWeights(), src);
+		List<Integer> path = Dijkstra.reconstructPath(res.prev, src, dst);
+		if (path.isEmpty())
+			return null;
+
+		double dist = 0.0, fareSum = 0.0;
+		for (int i = 0; i < path.size() - 1; i++) {
+			int u = path.get(i), v = path.get(i + 1);
+			for (int[] nb : graphService.getGraph().get(u)) {
+				if (nb[0] == v) {
+					dist += graphService.getDistanceWeights().get("e" + nb[1]);
+					fareSum += graphService.getFareWeights().get("e" + nb[1]);
+					break;
+				}
+			}
+		}
+		RouteResult rr = new RouteResult();
+		rr.stopPath = path;
+		rr.cost = fareSum;
+		rr.distanceKm = dist;
+		rr.fare = Math.max(fareSum, fareService.computeFare(dist)); // conservative billing
+		rr.srcStopId = src;
+		rr.dstStopId = dst;
+		return rr;
+	}
+
+	/**
+	 * Book a trip using selected strategy; returns fare charged or -1 if failure
+	 * (e.g. low balance).
+	 */
+	public double bookTripByDistance(int passengerId, String srcName, String dstName) {
+		RouteResult rr = shortestByDistance(srcName, dstName);
+		if (rr == null)
+			return -1;
+		return chargeAndRecordTransactional(passengerId, rr.srcStopId, rr.dstStopId, rr.distanceKm, rr.fare);
+	}
+
+	public double bookTripByCheapest(int passengerId, String srcName, String dstName) {
+		RouteResult rr = cheapestByEdgeFare(srcName, dstName);
+		if (rr == null)
+			return -1;
+		return chargeAndRecordTransactional(passengerId, rr.srcStopId, rr.dstStopId, rr.distanceKm, rr.fare);
+	}
+
+	private double chargeAndRecordTransactional(int passengerId, int srcStopId, int dstStopId, double distanceKm,
+			double fare) {
+		try (Connection con = DBConnect.getConnect()) {
+			con.setAutoCommit(false);
+			double current = passengerDAO.fetchBalance(con, passengerId);
+			if (current < fare) {
+				con.rollback();
+				return -1;
+			}
+
+			boolean debited = passengerDAO.updateBalance(con, passengerId, -fare);
+			boolean recorded = tripDAO.recordTrip(con, passengerId, srcStopId, dstStopId, distanceKm, fare);
+			if (debited && recorded) {
+				con.commit();
+				return fare;
+			} else {
+				con.rollback();
+				return -1;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return -1;
+		}
+	}
+
+	public Map<Integer, String> stopNamesById() {
+		Map<Integer, String> map = new HashMap<>();
+		graphService.getStopById().forEach((k, v) -> map.put(k, v.getName()));
+		return map;
+	}
+}

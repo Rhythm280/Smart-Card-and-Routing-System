@@ -1,0 +1,10 @@
+package com.smartbus;
+
+import com.smartbus.ui.LoginFrame;
+
+public class Main {
+    public static void main(String[] args) {
+        // Launch the AWT login UI
+        new LoginFrame();
+    }
+}

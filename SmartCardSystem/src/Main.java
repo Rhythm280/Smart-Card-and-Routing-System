@@ -1,0 +1,8 @@
+import com.smartBusSystem.ui.*;
+
+public class Main {
+    public static void main(String[] args) {
+        // Launch the AWT login UI
+        new LoginFrame();
+    }
+}

@@ -1,0 +1,35 @@
+package com.smartBusSystem.model;
+
+public class Stop {
+	private int stopId;
+	private String name;
+
+	public Stop() {
+	}
+
+	public Stop(int id, String name) {
+		this.stopId = id;
+		this.name = name;
+	}
+
+	public int getStopId() {
+		return stopId;
+	}
+
+	public void setStopId(int stopId) {
+		this.stopId = stopId;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	@Override
+	public String toString() {
+		return name;
+	}
+}

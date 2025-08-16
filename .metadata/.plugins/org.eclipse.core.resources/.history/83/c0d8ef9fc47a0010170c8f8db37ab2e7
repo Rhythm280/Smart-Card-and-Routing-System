@@ -1,0 +1,34 @@
+package com.smartBusSystem.service;
+
+import com.smartBusSystem.dao.AdminDAO;
+import com.smartBusSystem.dao.PassengerDAO;
+import com.smartBusSystem.model.Admin;
+import com.smartBusSystem.model.Passenger;
+
+public class AuthService {
+	private final AdminDAO adminDAO;
+	private final PassengerDAO passengerDAO;
+
+	public AuthService() {
+		this.adminDAO = new AdminDAO();
+		this.passengerDAO = new PassengerDAO();
+	}
+
+	// Admin login
+	public Admin loginAdmin(String username, String password) {
+		Admin admin = adminDAO.findByUsername(username);
+		if (admin != null && admin.getPassword().equals(password)) {
+			return admin;
+		}
+		return null;
+	}
+
+	// Passenger login
+	public Passenger loginPassenger(String passengerId, String password) {
+		Passenger passenger = passengerDAO.findById(passengerId);
+		if (passenger != null && passenger.getPassword().equals(password)) {
+			return passenger;
+		}
+		return null;
+	}
+}

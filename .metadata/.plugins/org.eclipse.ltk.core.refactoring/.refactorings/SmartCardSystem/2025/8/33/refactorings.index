@@ -1,0 +1,25 @@
+1755349339987	Delete element
+1755349669954	Encapsulate field 'name, ...'
+1755349674402	Encapsulate field 'pId, ...'
+1755349679132	Encapsulate field 'cardId, ...'
+1755349683328	Encapsulate field 'balance, ...'
+1755349688242	Encapsulate field 'password, ...'
+1755349829532	Rename package 'db'
+1755349859180	Rename package 'model'
+1755349912678	Delete element
+1755349952938	Rename package 'com.smartBus'
+1755350091653	Delete element
+1755350094974	Delete element
+1755351514277	Infer generic type arguments
+1755361632039	Delete element
+1755362444442	Delete element
+1755362758435	Rename type 'TripHistoryFrame'
+1755362810365	Delete element
+1755362831569	Delete element
+1755362956489	Rename compilation unit 'RoutingFrame.java'
+1755362971718	Rename compilation unit 'RoutedFrame.java'
+1755363555748	Rename compilation unit 'DBConnect.java'
+1755363994323	Delete element
+1755363997123	Delete element
+1755363999995	Delete element
+1755364324946	Rename package 'com.smartBusSysem.dao'

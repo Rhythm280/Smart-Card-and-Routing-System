@@ -1,0 +1,63 @@
+package com.smartBusSystem.ui;
+
+import com.smartBusSystem.model.*;
+import com.smartBusSysem.dao.*;
+
+import java.awt.*;
+import java.awt.event.*;
+
+public class PassengerDashboard extends Frame {
+	Passenger passenger;
+	Label balanceLabel;
+
+	public PassengerDashboard(Passenger p) {
+		this.passenger = p;
+
+		setTitle("Passenger Dashboard - " + p.getName());
+		setSize(400, 200);
+		setLayout(new GridLayout(3, 2));
+
+		add(new Label("Welcome, " + p.getName()));
+		add(new Label("Card ID: " + p.getCardId()));
+
+		balanceLabel = new Label("Balance: " + p.getBalance());
+		add(balanceLabel);
+
+		Button rechargeBtn = new Button("Recharge");
+		add(rechargeBtn);
+
+		Button logoutBtn = new Button("Logout");
+		add(logoutBtn);
+
+		// Recharge Action
+		rechargeBtn.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				new RechargeDialog(PassengerDashboard.this, passenger);
+			}
+		});
+
+		// Logout Action
+		logoutBtn.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+				new LoginFrame();
+			}
+		});
+
+		addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent we) {
+				dispose();
+				System.exit(0);
+			}
+		});
+
+		setVisible(true);
+	}
+
+	public void refreshBalance() {
+		PassengerDAO dao = new PassengerDAO();
+		Passenger updated = dao.login(passenger.getCardId(), passenger.getPassword());
+		passenger.setBalance(updated.getBalance());
+		balanceLabel.setText("Balance: " + passenger.getBalance());
+	}
+}

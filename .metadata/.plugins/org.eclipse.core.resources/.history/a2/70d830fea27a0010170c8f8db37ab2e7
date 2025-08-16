@@ -1,0 +1,5 @@
+package com.smartBusSystem.model;
+
+public class Route {
+
+}

@@ -1,0 +1,78 @@
+package com.smartBusSystem.ui;
+
+import com.smartBusSysem.dao.*;
+import com.smartBusSystem.model.*;
+
+import java.awt.*;
+import java.awt.event.*;
+
+public class LoginFrame extends Frame {
+    TextField cardField, passField;
+    Button loginBtn;
+
+    public LoginFrame() {
+        setTitle("Passenger Login");
+        setSize(350, 200);
+        setLayout(new GridLayout(3, 2));
+
+        add(new Label("Card ID:"));
+        cardField = new TextField();
+        add(cardField);
+
+        add(new Label("Password:"));
+        passField = new TextField();
+        passField.setEchoChar('*');
+        add(passField);
+
+        loginBtn = new Button("Login");
+        add(loginBtn);
+
+        // Exit button
+        Button exitBtn = new Button("Exit");
+        add(exitBtn);
+
+        // Action Listener for Login
+        loginBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String card = cardField.getText();
+                String pass = passField.getText();
+                PassengerDAO dao = new PassengerDAO();
+                Passenger p = dao.login(card, pass);
+                if (p != null) {
+                    dispose(); // close login frame
+                    new PassengerDashboard(p); // open dashboard
+                } else {
+                    showMessage("Invalid Credentials!");
+                }
+            }
+        });
+
+        // Exit Button Action
+        exitBtn.addActionListener(e -> System.exit(0));
+
+        // Handle window close
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent we) {
+                dispose();
+                System.exit(0);
+            }
+        });
+
+        setVisible(true);
+    }
+
+    private void showMessage(String msg) {
+        Dialog d = new Dialog(this, "Message", true);
+        d.setLayout(new FlowLayout());
+        d.add(new Label(msg));
+        Button ok = new Button("OK");
+        ok.addActionListener(e -> d.dispose());
+        d.add(ok);
+        d.setSize(200, 100);
+        d.setVisible(true);
+    }
+
+    public static void main(String[] args) {
+        new LoginFrame();
+    }
+}

@@ -1,0 +1,55 @@
+package com.smartBusSystem.ui;
+
+import com.smartBusSysem.dao.*;
+import com.smartBusSystem.model.*;
+
+import java.awt.*;
+import java.awt.event.*;
+
+public class RechargeFrame extends Frame {
+	private final Passenger me;
+	private final PassengerDAO dao = new PassengerDAO();
+	private final TextField amount = new TextField();
+	private final Label status = new Label(" ");
+	private final Label lblBalance;
+
+	public RechargeFrame(Passenger me, Label balanceLabel) {
+		this.me = me;
+		this.lblBalance = balanceLabel;
+		setTitle("Recharge");
+		setSize(300, 160);
+		setLayout(new GridLayout(3, 2, 6, 6));
+		add(new Label("Amount (₹):"));
+		add(amount);
+		Button btnAdd = new Button("Add");
+		add(status);
+		add(btnAdd);
+
+		btnAdd.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					double amt = Double.parseDouble(amount.getText());
+					if (amt <= 0) {
+						status.setText("Enter positive amount");
+						return;
+					}
+					boolean ok = dao.updateBalance(me.getPassengerId(), amt);
+					if (ok) {
+						me.setBalance(me.getBalance() + amt);
+						lblBalance.setText(String.format("₹ %.2f", me.getBalance()));
+						status.setText("Recharged!");
+					} else
+						status.setText("Failed.");
+				} catch (Exception ex) {
+					status.setText("Invalid amount.");
+				}
+			}
+		});
+
+		addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				dispose();
+			}
+		});
+	}
+}

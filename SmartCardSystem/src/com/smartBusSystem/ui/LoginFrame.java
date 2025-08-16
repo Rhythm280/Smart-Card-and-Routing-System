@@ -1,0 +1,62 @@
+package com.smartBusSystem.ui;
+
+import com.smartBusSystem.dao.*;
+import com.smartBusSystem.model.*;
+import com.smartBusSystem.service.*;
+
+import java.awt.*;
+import java.awt.event.*;
+
+public class LoginFrame extends Frame {
+    private final TextField tf1 = new TextField();
+    private final TextField tf2 = new TextField();
+    private final Choice role = new Choice();
+    private final Button btnLogin = new Button("Login");
+    private final Label status = new Label(" ");
+
+    private final AuthService auth = new AuthService();
+
+    public LoginFrame() {
+        setTitle("Smart Bus Pass - Login");
+        setSize(380, 220);
+        setLayout(new GridLayout(5,2,6,6));
+
+        add(new Label("Role:"));
+        role.add("Passenger");
+        role.add("Admin");
+        add(role);
+
+        add(new Label("ID / Username:"));
+        add(tf1);
+        add(new Label("Password:"));
+        tf2.setEchoChar('*');
+        add(tf2);
+
+        add(status);
+        add(btnLogin);
+
+        btnLogin.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String r = role.getSelectedItem();
+                if ("Admin".equals(r)) {
+                    com.smartBusSystem.model.Admin a = auth.loginAdmin(tf1.getText().trim(), tf2.getText().trim());
+                    if (a != null) {
+                        status.setText("Welcome, " + a.getUsername());
+                        new AdminDashboard(a).setVisible(true);
+                        dispose();
+                    } else status.setText("Invalid admin credentials.");
+                } else {
+                    Passenger p = auth.loginPassenger(tf1.getText().trim(), tf2.getText().trim());
+                    if (p != null) {
+                        status.setText("Welcome, " + p.getName());
+                        new PassengerDashboard(p).setVisible(true);
+                        dispose();
+                    } else status.setText("Invalid passenger credentials.");
+                }
+            }
+        });
+
+        addWindowListener(new WindowAdapter(){ public void windowClosing(WindowEvent e){ System.exit(0);} });
+        setVisible(true);
+    }
+}

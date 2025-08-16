@@ -1,0 +1,29 @@
+package com.smartBusSysem.dao;
+
+import com.smartbus.db.DB;
+import com.smartbus.model.Stop;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class StopDAO {
+    public List<Stop> findAll() {
+        List<Stop> list = new ArrayList<>();
+        String sql = "SELECT stop_id,name FROM stop ORDER BY name";
+        try (Connection con = DB.get(); Statement st = con.createStatement(); ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) list.add(new Stop(rs.getInt(1), rs.getString(2)));
+        } catch (SQLException e) { e.printStackTrace(); }
+        return list;
+    }
+
+    public Stop findByName(String name) {
+        String sql = "SELECT stop_id,name FROM stop WHERE name=?";
+        try (Connection con = DB.get(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, name);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return new Stop(rs.getInt(1), rs.getString(2));
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return null;
+    }
+}

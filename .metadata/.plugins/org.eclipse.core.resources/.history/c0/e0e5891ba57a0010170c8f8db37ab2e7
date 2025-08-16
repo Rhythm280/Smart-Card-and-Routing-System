@@ -1,0 +1,5 @@
+package com.smartBusSysem.dao;
+
+public class EdgeDAO {
+
+}

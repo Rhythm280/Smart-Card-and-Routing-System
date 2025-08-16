@@ -1,0 +1,63 @@
+package ui;
+
+import dao.TransactionDAO;
+import dao.PassengerDAO;
+import model.Passenger;
+
+import java.awt.*;
+import java.awt.event.*;
+
+public class TripBookingDialog extends Dialog {
+    public TripBookingDialog(PassengerDashboard parent, Passenger passenger) {
+        super(parent, "Book Trip", true);
+        setSize(350, 200);
+        setLayout(new GridLayout(4, 2));
+
+        add(new Label("From Stop:"));
+        TextField fromField = new TextField();
+        add(fromField);
+
+        add(new Label("To Stop:"));
+        TextField toField = new TextField();
+        add(toField);
+
+        add(new Label("Fare:"));
+        TextField fareField = new TextField();
+        add(fareField);
+
+        Button bookBtn = new Button("Book Trip");
+        add(bookBtn);
+
+        Button cancelBtn = new Button("Cancel");
+        add(cancelBtn);
+
+        bookBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    String from = fromField.getText();
+                    String to = toField.getText();
+                    double fare = Double.parseDouble(fareField.getText());
+
+                    if (passenger.getBalance() >= fare) {
+                        TransactionDAO tdao = new TransactionDAO();
+                        tdao.addTransaction(passenger.getPassengerId(), from, to, fare);
+
+                        PassengerDAO pdao = new PassengerDAO();
+                        pdao.updateBalance(passenger.getPassengerId(), -fare);
+
+                        parent.refreshBalance();
+                        dispose();
+                    } else {
+                        System.out.println("Insufficient Balance!");
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+        cancelBtn.addActionListener(e -> dispose());
+
+        setVisible(true);
+    }
+}

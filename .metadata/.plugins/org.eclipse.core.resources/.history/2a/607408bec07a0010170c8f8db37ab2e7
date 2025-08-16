@@ -1,0 +1,5 @@
+package com.smartBusSystem.ui;
+
+public class TripBookingDialog {
+
+}

@@ -1,0 +1,59 @@
+package com.smartBusSystem.service;
+
+import java.awt.List;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.smartBusSysem.dao.EdgeDAO;
+import com.smartBusSysem.dao.StopDAO;
+
+public class GraphService {
+	private final StopDAO stopDAO = new StopDAO();
+	private final EdgeDAO edgeDAO = new EdgeDAO();
+
+	// nodeId -> neighbors [neighborId, edgeId]
+	private final Map<Integer, List<int[]>> graph = new HashMap<>();
+	private final Map<String, Double> distanceWeights = new HashMap<>();
+	private final Map<String, Double> fareWeights = new HashMap<>();
+	private final Map<Integer, Stop> stopById = new HashMap<>();
+	private final Map<String, Integer> stopIdByName = new HashMap<>();
+
+	public void reload() {
+		graph.clear();
+		distanceWeights.clear();
+		fareWeights.clear();
+		stopById.clear();
+		stopIdByName.clear();
+
+		for (Stop s : stopDAO.findAll()) {
+			stopById.put(s.getStopId(), s);
+			stopIdByName.put(s.getName(), s.getStopId());
+			graph.put(s.getStopId(), new ArrayList<>());
+		}
+		for (Edge e : edgeDAO.findAll()) {
+			graph.get(e.getSrcStopId()).add(new int[] { e.getDstStopId(), e.getEdgeId() });
+			distanceWeights.put("e" + e.getEdgeId(), e.getDistanceKm());
+			fareWeights.put("e" + e.getEdgeId(), Math.max(e.getBaseFare(), 0.0));
+		}
+	}
+
+	public Map<Integer, List<int[]>> getGraph() {
+		return graph;
+	}
+
+	public Map<String, Double> getDistanceWeights() {
+		return distanceWeights;
+	}
+
+	public Map<String, Double> getFareWeights() {
+		return fareWeights;
+	}
+
+	public Map<Integer, Stop> getStopById() {
+		return stopById;
+	}
+
+	public Integer idOf(String stopName) {
+		return stopIdByName.get(stopName);
+	}
+}

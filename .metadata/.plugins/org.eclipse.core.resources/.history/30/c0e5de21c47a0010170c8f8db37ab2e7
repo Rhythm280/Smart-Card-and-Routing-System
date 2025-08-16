@@ -1,0 +1,11 @@
+package com.smartBusSysem.dao;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public class DaoUtil {
+	public static String getString(ResultSet rs, String col) throws SQLException {
+		String s = rs.getString(col);
+		return (s == null) ? "" : s;
+	}
+}

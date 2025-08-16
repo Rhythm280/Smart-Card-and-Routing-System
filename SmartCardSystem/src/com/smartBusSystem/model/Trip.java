@@ -1,0 +1,69 @@
+package com.smartBusSystem.model;
+
+import java.time.LocalDateTime;
+
+public class Trip {
+	private int tripId;
+	private int passengerId;
+	private int srcStopId;
+	private int dstStopId;
+	private double routeDistanceKm;
+	private double fareCharged;
+	private LocalDateTime createdAt;
+
+	public int getTripId() {
+		return tripId;
+	}
+
+	public void setTripId(int tripId) {
+		this.tripId = tripId;
+	}
+
+	public int getPassengerId() {
+		return passengerId;
+	}
+
+	public void setPassengerId(int passengerId) {
+		this.passengerId = passengerId;
+	}
+
+	public int getSrcStopId() {
+		return srcStopId;
+	}
+
+	public void setSrcStopId(int srcStopId) {
+		this.srcStopId = srcStopId;
+	}
+
+	public int getDstStopId() {
+		return dstStopId;
+	}
+
+	public void setDstStopId(int dstStopId) {
+		this.dstStopId = dstStopId;
+	}
+
+	public double getRouteDistanceKm() {
+		return routeDistanceKm;
+	}
+
+	public void setRouteDistanceKm(double routeDistanceKm) {
+		this.routeDistanceKm = routeDistanceKm;
+	}
+
+	public double getFareCharged() {
+		return fareCharged;
+	}
+
+	public void setFareCharged(double fareCharged) {
+		this.fareCharged = fareCharged;
+	}
+
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
+}
