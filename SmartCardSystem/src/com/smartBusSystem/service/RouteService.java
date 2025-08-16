@@ -1,7 +1,7 @@
 package com.smartBusSystem.service;
 
 import com.smartBusSystem.dao.*;
-import com.smartBusSystem.db.*;
+import com.smartBusSystem.db.DB;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -19,9 +19,9 @@ public class RouteService {
 
 	public static class RouteResult {
 		public List<Integer> stopPath;
-		public double cost; // distance or fare sum (algo objective)
+		public double cost; // distance or fare sum
 		public double distanceKm; // computed distance along path
-		public double fare; // final fare charged by policy
+		public double fare; // final fare charged
 		public int srcStopId;
 		public int dstStopId;
 	}
@@ -30,6 +30,7 @@ public class RouteService {
 		Integer src = graphService.idOf(srcName), dst = graphService.idOf(dstName);
 		if (src == null || dst == null)
 			return null;
+
 		var res = Dijkstra.shortestPath(graphService.getGraph(), graphService.getDistanceWeights(), src);
 		List<Integer> path = Dijkstra.reconstructPath(res.prev, src, dst);
 		if (path.isEmpty())
@@ -45,6 +46,7 @@ public class RouteService {
 				}
 			}
 		}
+
 		RouteResult rr = new RouteResult();
 		rr.stopPath = path;
 		rr.cost = dist;
@@ -59,6 +61,7 @@ public class RouteService {
 		Integer src = graphService.idOf(srcName), dst = graphService.idOf(dstName);
 		if (src == null || dst == null)
 			return null;
+
 		var res = Dijkstra.shortestPath(graphService.getGraph(), graphService.getFareWeights(), src);
 		List<Integer> path = Dijkstra.reconstructPath(res.prev, src, dst);
 		if (path.isEmpty())
@@ -75,20 +78,17 @@ public class RouteService {
 				}
 			}
 		}
+
 		RouteResult rr = new RouteResult();
 		rr.stopPath = path;
 		rr.cost = fareSum;
 		rr.distanceKm = dist;
-		rr.fare = Math.max(fareSum, fareService.computeFare(dist)); // conservative billing
+		rr.fare = Math.max(fareSum, fareService.computeFare(dist));
 		rr.srcStopId = src;
 		rr.dstStopId = dst;
 		return rr;
 	}
 
-	/**
-	 * Book a trip using selected strategy; returns fare charged or -1 if failure
-	 * (e.g. low balance).
-	 */
 	public double bookTripByDistance(int passengerId, String srcName, String dstName) {
 		RouteResult rr = shortestByDistance(srcName, dstName);
 		if (rr == null)
@@ -103,18 +103,21 @@ public class RouteService {
 		return chargeAndRecordTransactional(passengerId, rr.srcStopId, rr.dstStopId, rr.distanceKm, rr.fare);
 	}
 
+	// Transactional method
 	private double chargeAndRecordTransactional(int passengerId, int srcStopId, int dstStopId, double distanceKm,
 			double fare) {
 		try (Connection con = DB.get()) {
 			con.setAutoCommit(false);
-			double current = passengerDAO.fetchBalance(con, passengerId);
-			if (current < fare) {
+
+			double currentBalance = passengerDAO.fetchBalance(con, passengerId);
+			if (currentBalance < fare) {
 				con.rollback();
 				return -1;
 			}
 
 			boolean debited = passengerDAO.updateBalance(con, passengerId, -fare);
-			boolean recorded = tripDAO.recordTrip(con, passengerId, srcStopId, dstStopId, distanceKm, fare);
+			boolean recorded = tripDAO.recordTrip(passengerId, srcStopId, dstStopId, distanceKm, fare);
+
 			if (debited && recorded) {
 				con.commit();
 				return fare;

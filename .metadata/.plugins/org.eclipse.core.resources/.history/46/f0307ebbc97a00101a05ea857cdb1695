@@ -1,0 +1,56 @@
+package com.smartBusSystem.dao;
+
+import com.smartBusSystem.db.DB;
+import com.smartBusSystem.model.Trip;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class TripDAO {
+
+	// Record a new trip
+	public void recordTrip(int passengerId, int srcStopId, int dstStopId, double routeDistanceKm, double fareCharged)
+			throws SQLException {
+		String sql = "INSERT INTO trip (passenger_id, src_stop_id, dst_stop_id, route_distance_km, fare_charged, created_at) VALUES (?, ?, ?, ?, ?, NOW())";
+
+		try (Connection conn = DB.get(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+			ps.setInt(1, passengerId);
+			ps.setInt(2, srcStopId);
+			ps.setInt(3, dstStopId);
+			ps.setDouble(4, routeDistanceKm);
+			ps.setDouble(5, fareCharged);
+
+			ps.executeUpdate();
+		}
+	}
+
+	// Fetch trips for a passenger
+	public List<String> listPrettyByPassenger(int passengerId) {
+		List<String> lines = new ArrayList<>();
+		String sql = "SELECT trip_id, src_stop_id, dst_stop_id, route_distance_km, fare_charged, created_at "
+				+ "FROM trip WHERE passenger_id = ? ORDER BY created_at DESC";
+
+		try (Connection conn = DB.get(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+			ps.setInt(1, passengerId);
+
+			try (ResultSet rs = ps.executeQuery()) {
+				while (rs.next()) {
+					String record = "Trip #" + rs.getInt("trip_id") + " | From Stop ID: " + rs.getInt("src_stop_id")
+							+ " → To Stop ID: " + rs.getInt("dst_stop_id") + " | Distance: "
+							+ rs.getDouble("route_distance_km") + " km" + " | Fare: ₹" + rs.getDouble("fare_charged")
+							+ " | On: " + rs.getTimestamp("created_at");
+					lines.add(record);
+				}
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return lines;
+	}
+
+}

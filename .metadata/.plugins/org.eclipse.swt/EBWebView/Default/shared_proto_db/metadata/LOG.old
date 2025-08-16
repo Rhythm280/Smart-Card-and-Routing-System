@@ -1,2 +1,3 @@
-2025/08/16-18:30:04.919 4adc Creating DB C:\Users\ASUS\OneDrive\Desktop\SmartCardAndRoutingSystem\.metadata\.plugins\org.eclipse.swt\EBWebView\Default\shared_proto_db\metadata since it was missing.
-2025/08/16-18:30:04.934 4adc Reusing MANIFEST C:\Users\ASUS\OneDrive\Desktop\SmartCardAndRoutingSystem\.metadata\.plugins\org.eclipse.swt\EBWebView\Default\shared_proto_db\metadata/MANIFEST-000001
+2025/08/16-18:30:28.440 4010 Reusing MANIFEST C:\Users\ASUS\OneDrive\Desktop\SmartCardAndRoutingSystem\.metadata\.plugins\org.eclipse.swt\EBWebView\Default\shared_proto_db\metadata/MANIFEST-000001
+2025/08/16-18:30:28.443 4010 Recovering log #3
+2025/08/16-18:30:28.445 4010 Reusing old log C:\Users\ASUS\OneDrive\Desktop\SmartCardAndRoutingSystem\.metadata\.plugins\org.eclipse.swt\EBWebView\Default\shared_proto_db\metadata/000003.log 

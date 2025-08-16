@@ -1,0 +1,34 @@
+package com.smartBusSystem.dao;
+
+import com.smartBusSystem.db.DB;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class TripDAO {
+
+	public List<String> listPrettyByPassenger(int passengerId) {
+        List<String> trips = new ArrayList<>();
+        String sql = "SELECT trip_id, date, fare, source, destination FROM trip WHERE passenger_id = ? ORDER BY date DESC";
+
+
+        try (Connection con = DB.get();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, passengerId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String record = "Trip #" + rs.getInt("trip_id") +
+                            " | " + rs.getString("date") +
+                            " | " + rs.getString("source") + " → " + rs.getString("destination") +
+                            " | Fare: ₹" + rs.getDouble("fare");
+                    trips.add(record);
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return trips;
+    }
+}

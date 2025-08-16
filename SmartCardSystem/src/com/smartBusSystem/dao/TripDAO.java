@@ -1,51 +1,52 @@
 package com.smartBusSystem.dao;
 
-import com.smartBusSystem.db.*;
+import com.smartBusSystem.db.DB;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class TripDAO {
 
-	// Transaction-aware insert
-	public boolean recordTrip(Connection con, int passengerId, int srcStopId, int dstStopId, double distance,
-			double fare) throws SQLException {
-		String sql = "INSERT INTO trip(passenger_id,src_stop_id,dst_stop_id,route_distance_km,fare_charged) VALUES(?,?,?,?,?)";
-		try (PreparedStatement ps = con.prepareStatement(sql)) {
+	// List trips for a passenger (pretty format)
+	public List<String> listPrettyByPassenger(int passengerId) {
+		List<String> trips = new ArrayList<>();
+		String sql = "SELECT trip_id, created_at, fare_charged, src_stop_id, dst_stop_id FROM trip WHERE passenger_id = ? ORDER BY created_at DESC";
+
+		try (Connection con = DB.get(); PreparedStatement ps = con.prepareStatement(sql)) {
+
+			ps.setInt(1, passengerId);
+			try (ResultSet rs = ps.executeQuery()) {
+				while (rs.next()) {
+					String record = "Trip #" + rs.getInt("trip_id") + " | " + rs.getTimestamp("created_at")
+							+ " | Source Stop ID: " + rs.getInt("src_stop_id") + " → Dest Stop ID: "
+							+ rs.getInt("dst_stop_id") + " | Fare: ₹" + rs.getDouble("fare_charged");
+					trips.add(record);
+				}
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return trips;
+	}
+
+	// Record a trip and return success/failure
+	public boolean recordTrip(int passengerId, int srcStopId, int dstStopId, double routeDistanceKm,
+			double fareCharged) {
+		String sql = "INSERT INTO trip (passenger_id, src_stop_id, dst_stop_id, route_distance_km, fare_charged, created_at) "
+				+ "VALUES (?, ?, ?, ?, ?, NOW())";
+		try (Connection con = DB.get(); PreparedStatement ps = con.prepareStatement(sql)) {
 			ps.setInt(1, passengerId);
 			ps.setInt(2, srcStopId);
 			ps.setInt(3, dstStopId);
-			ps.setDouble(4, distance);
-			ps.setDouble(5, fare);
-			return ps.executeUpdate() == 1;
-		}
-	}
-
-	// Non-transactional convenience (unused by booking now)
-	public boolean recordTrip(int passengerId, int srcStopId, int dstStopId, double distance, double fare) {
-		try (Connection con = DB.get()) {
-			return recordTrip(con, passengerId, srcStopId, dstStopId, distance, fare);
+			ps.setDouble(4, routeDistanceKm);
+			ps.setDouble(5, fareCharged);
+			ps.executeUpdate();
+			return true;
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return false;
 		}
-	}
-
-	// History via view with stop names
-	public List<String> listPrettyByPassenger(int passengerId) {
-		String sql = "SELECT trip_id, src_name, dst_name, route_distance_km, fare_charged, created_at FROM trip_view WHERE passenger_id=? ORDER BY created_at DESC";
-		List<String> lines = new ArrayList<>();
-		try (Connection con = DB.get(); PreparedStatement ps = con.prepareStatement(sql)) {
-			ps.setInt(1, passengerId);
-			try (ResultSet rs = ps.executeQuery()) {
-				while (rs.next()) {
-					lines.add(String.format("#%d  %s → %s | %.2f km | ₹%.2f | %s", rs.getInt(1), rs.getString(2),
-							rs.getString(3), rs.getDouble(4), rs.getDouble(5), rs.getTimestamp(6).toString()));
-				}
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return lines;
 	}
 }

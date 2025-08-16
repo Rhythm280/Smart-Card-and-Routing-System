@@ -1,6 +1,6 @@
 package com.smartBusSystem.model;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 public class Trip {
 	private int tripId;
@@ -9,61 +9,45 @@ public class Trip {
 	private int dstStopId;
 	private double routeDistanceKm;
 	private double fareCharged;
-	private LocalDateTime createdAt;
+	private Timestamp createdAt;
 
-	public int getTripId() {
-		return tripId;
+	public Trip(int tripId, int passengerId, int srcStopId, int dstStopId, double routeDistanceKm, double fareCharged,
+			Timestamp createdAt) {
+		this.tripId = tripId;
+		this.passengerId = passengerId;
+		this.srcStopId = srcStopId;
+		this.dstStopId = dstStopId;
+		this.routeDistanceKm = routeDistanceKm;
+		this.fareCharged = fareCharged;
+		this.createdAt = createdAt;
 	}
 
-	public void setTripId(int tripId) {
-		this.tripId = tripId;
+	// Getters and Setters
+	public int getTripId() {
+		return tripId;
 	}
 
 	public int getPassengerId() {
 		return passengerId;
 	}
 
-	public void setPassengerId(int passengerId) {
-		this.passengerId = passengerId;
-	}
-
 	public int getSrcStopId() {
 		return srcStopId;
-	}
-
-	public void setSrcStopId(int srcStopId) {
-		this.srcStopId = srcStopId;
 	}
 
 	public int getDstStopId() {
 		return dstStopId;
 	}
 
-	public void setDstStopId(int dstStopId) {
-		this.dstStopId = dstStopId;
-	}
-
 	public double getRouteDistanceKm() {
 		return routeDistanceKm;
-	}
-
-	public void setRouteDistanceKm(double routeDistanceKm) {
-		this.routeDistanceKm = routeDistanceKm;
 	}
 
 	public double getFareCharged() {
 		return fareCharged;
 	}
 
-	public void setFareCharged(double fareCharged) {
-		this.fareCharged = fareCharged;
-	}
-
-	public LocalDateTime getCreatedAt() {
+	public Timestamp getCreatedAt() {
 		return createdAt;
-	}
-
-	public void setCreatedAt(LocalDateTime createdAt) {
-		this.createdAt = createdAt;
 	}
 }
